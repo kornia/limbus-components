@@ -1,12 +1,11 @@
 from setuptools import setup, find_packages
 
 setup(name='limbus-components',
-      version='0.1.0',
+      version='0.1.0.dev',
       description='Components to be used with limbus.',
       author='Luis Ferraz',
       url='https://github.com/kornia/limbus-components',
       install_requires=[
-          'limbus@git+https://git@github.com/kornia/limbus.git',
           'torch',
           'numpy',
           'kornia',
@@ -14,6 +13,7 @@ setup(name='limbus-components',
       ],
       extras_require={
           'dev': [
+              'limbus@git+https://git@github.com/kornia/limbus.git',
               'pytest',
               'pytest-flake8',
               'pytest-cov',

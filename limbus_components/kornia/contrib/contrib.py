@@ -1,5 +1,4 @@
 """Some predefined components for kornia."""
-
 from typing import List, Optional
 import logging
 import asyncio

@@ -6,7 +6,7 @@ from limbus.core import NoValue, ComponentState
 from limbus.widgets import WidgetState
 from limbus import widgets
 
-from components.base import Constant, Adder, ImageShow, Printer  # type: ignore
+from limbus_components.base import Constant, Adder, ImageShow, Printer  # type: ignore
 
 
 class TestConstant:
