@@ -13,3 +13,9 @@ git clone https://github.com/kornia/limbus-components
 cd limbus-components
 pip install -e .
 ```
+
+For development purposes, you can install it with:
+
+```bash
+pip install -e .[dev]  # also installs limbus
+```
