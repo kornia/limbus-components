@@ -11,7 +11,7 @@ setup(name='limbus-components',
           'torch',
           'numpy',
           'kornia',
-          'opencv-python<4.7'  # 4.7 doesn't work in my computer
+          'opencv-python'
       ],
       extras_require={
           'dev': [
