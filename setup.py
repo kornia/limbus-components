@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='limbus-components',
-      version='0.1.2.dev',
+      version='0.1.2',
       description='Components to be used with limbus.',
       long_description=open('README.md').read(),
       long_description_content_type='text/markdown',
