@@ -11,7 +11,8 @@ setup(name='limbus-components',
           'torch',
           'numpy',
           'kornia',
-          'opencv-python'
+          'opencv-python',
+          'pillow',
       ],
       extras_require={
           'dev': [
