@@ -10,7 +10,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-
 def _copy_files(src_path: Path, dest_path: Path):
     """Copy files from src_path to dest_path."""
     for elem in src_path.iterdir():
@@ -18,8 +17,15 @@ def _copy_files(src_path: Path, dest_path: Path):
             if (dest_path / elem.name).exists():
                 if elem.name == "__init__.py":
                     # concat files
+                    lines = []
+                    with open(str(dest_path / elem.name), 'r') as file:
+                        lines = file.readlines()
                     with open(str(dest_path / elem.name), 'a') as outfile, fileinput.input(str(elem)) as infile:
+                        # TODO: check if component name is duplicated (several components sharing name!!!)
                         for line in infile:
+                            if line in lines:
+                                # if the exact same line is already in the file, we skip it
+                                continue
                             outfile.write(line)
                 else:
                     logger.warning(f"File {elem.name} already exists in {dest_path}. NOT COPIED!!!")
