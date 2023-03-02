@@ -19,3 +19,17 @@ For development purposes, you can install it with:
 ```bash
 pip install -e .[dev]  # also installs limbus
 ```
+
+### Dev Requirements
+
+To add new components that must be done in the folder `limbus_components_dev` and then in order to release the changes you must run the the `release` script.
+
+All the `__init__.py` files inside the folder `limbus_components_dev` must have the imports following the next patterns:
+
+```python
+    from . import <component_module>  # to import modules
+    from .<component_module> import <component_class0>, <component_class1>, ...  # to import components
+    # IMPORTANT NOTE: imports with () are not allowed
+```
+
+if they are not following these patterns, the `release` script will fail. Check examples in the folder `limbus_components_dev`.

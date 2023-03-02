@@ -1,3 +1,3 @@
-from limbus_components import base
-from limbus_components import kornia
-from limbus_components import torch
+from . import kornia
+from . import torch
+from . import base
