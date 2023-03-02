@@ -39,7 +39,7 @@ class Cat(Component):
             cat dimension.
         dim (int, optional): the dimension over which the tensors are concatenated
 
-    Keyword args:
+    Keyword Args:
         out (Tensor, optional): the output tensor.
 
     Example::

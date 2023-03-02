@@ -33,7 +33,7 @@ class Stack(Component):
         dim (int): dimension to insert. Has to be between 0 and the number
             of dimensions of concatenated tensors (inclusive)
 
-    Keyword args:
+    Keyword Args:
         out (Tensor, optional): the output tensor.
 
     """

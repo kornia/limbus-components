@@ -91,7 +91,7 @@ class WarpPerspective(Component):
 
     async def forward(self) -> ComponentState:
         """Execute the forward pass of the component."""
-        src, M, dsize, mode, padding_mode, align_corners, fill_value = await asyncio.gather(
+        src, M, dsize, mode, padding_mode, align_corners, fill_value = await asyncio.gather(  # noqa: N806
             self._inputs.src.receive(),
             self._inputs.M.receive(),
             self._inputs.dsize.receive(),
