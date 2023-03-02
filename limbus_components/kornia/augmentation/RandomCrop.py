@@ -28,7 +28,6 @@ class RandomCrop(Component):
         p (float, optional): Check original documentation. Default: 1.0.
         keepdim (bool, optional): Check original documentation. Default: False.
         cropping_mode (str, optional): Check original documentation. Default: "slice".
-        return_transform (typing.Optional[bool], optional): Check original documentation. Default: None.
 
     Input params:
         input (torch.Tensor): Check original documentation.
@@ -114,8 +113,7 @@ class RandomCrop(Component):
                  align_corners: bool = True,
                  p: float = 1.0,
                  keepdim: bool = False,
-                 cropping_mode: str = "slice",
-                 return_transform: typing.Optional[bool] = None) -> None:
+                 cropping_mode: str = "slice") -> None:
         super().__init__(name)
         self._obj = kornia.augmentation.RandomCrop(size,
                                                    padding,
@@ -127,8 +125,7 @@ class RandomCrop(Component):
                                                    align_corners,
                                                    p,
                                                    keepdim,
-                                                   cropping_mode,
-                                                   return_transform)
+                                                   cropping_mode)
         self._callable = self._obj.forward
 
     @staticmethod
