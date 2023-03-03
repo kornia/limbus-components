@@ -4,7 +4,7 @@ import kornia
 import torch
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class ScalePyramid(Component):
@@ -54,6 +54,17 @@ class ScalePyramid(Component):
         >>> sp, sigmas, pds = ScalePyramid(3, 15)(input)
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        x: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out0: OutputParam
+        out1: OutputParam
+        out2: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self,
                  name: str,
                  n_levels: int = 3,

@@ -5,7 +5,7 @@ import torch
 from torch import tensor
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class WarpPerspective(Component):
@@ -69,6 +69,21 @@ class WarpPerspective(Component):
         latest/warp_perspective.html>`_.
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        src: InputParam
+        M: InputParam
+        dsize: InputParam
+        mode: InputParam
+        padding_mode: InputParam
+        align_corners: InputParam
+        fill_value: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._callable = kornia.geometry.transform.warp_perspective

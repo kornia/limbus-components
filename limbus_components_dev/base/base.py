@@ -10,7 +10,7 @@ import numpy as np
 import PIL
 import torch
 import kornia
-from limbus.core import Component, ComponentState, Params, InputParams, OutputParams, NoValue
+from limbus.core import Component, ComponentState, Params, InputParams, OutputParams, NoValue, InputParam, OutputParam
 from limbus.widgets import WidgetState, WidgetComponent, BaseWidgetComponent
 from limbus import widgets
 
@@ -35,6 +35,11 @@ class ImageReader(WidgetComponent):
     """
     # the viz state by default is disabled but can be enabled by the user with the widget_state property.
     WIDGET_STATE: WidgetState = WidgetState.DISABLED
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        image: OutputParam
+
+    outputs: OutputsTyping  # type: ignore
 
     def __init__(self, name: str, path: Path, batch_size: int = 1):
         super().__init__(name)
@@ -93,6 +98,11 @@ class Webcam(WidgetComponent):
     """
     # the viz state by default is disabled but can be enabled by the user with the widget_state property.
     WIDGET_STATE: WidgetState = WidgetState.DISABLED
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        image: OutputParam
+
+    outputs: OutputsTyping  # type: ignore
 
     def __init__(self, name: str, batch_size: int = 1):
         super().__init__(name)
@@ -158,6 +168,16 @@ class DrawBoxes(Component):
         image (torch.Tensor): a batch of images (BxCxHxW).
 
     """
+    class InputsTyping(OutputParams):  # noqa: D106
+        images: InputParam
+        boxes: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str):
         super().__init__(name)
 
@@ -201,6 +221,16 @@ class CropBoxes(Component):
         faces (torch.Tensor): a batch of faces (FxCxHxW).
 
     """
+    class InputsTyping(OutputParams):  # noqa: D106
+        images: InputParam
+        boxes: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        crops: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str, size: Tuple[int, int]):
         super().__init__(name)
         self._size: Tuple[int, int] = size
@@ -247,6 +277,11 @@ class ImageShow(BaseWidgetComponent):
 
     """
 
+    class InputsTyping(OutputParams):  # noqa: D106
+        image: InputParam
+
+    inputs: InputsTyping  # type: ignore
+
     @staticmethod
     def register_properties(properties: Params) -> None:  # noqa: D102
         # this line is like super() but for static methods.
@@ -278,6 +313,11 @@ class Constant(Component):
         out (Any): constant value. Same value as the arg value.
 
     """
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str, value: Any):
         super().__init__(name)
         self._value = value
@@ -306,6 +346,11 @@ class Printer(BaseWidgetComponent):
         append (bool, optional): If True, the text is appended to the previous text. Default: False.
 
     """
+    class InputsTyping(OutputParams):  # noqa: D106
+        inp: InputParam
+
+    inputs: InputsTyping  # type: ignore
+
     @staticmethod
     def register_properties(properties: Params) -> None:  # noqa: D102
         # this line is like super() but for static methods.
@@ -335,6 +380,15 @@ class Accumulator(Component):
         out (List[Any]): List with accumulated data.
 
     """
+    class InputsTyping(OutputParams):  # noqa: D106
+        inp: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str, elements: int = 1):
         super().__init__(name)
         self._elements: int = elements
@@ -350,9 +404,9 @@ class Accumulator(Component):
     async def forward(self) -> ComponentState:  # noqa: D102
         res: List[int] = []
         while len(res) < self._elements:
-            res.append(await self._inputs.inp.receive())
+            res.append(await self.inputs.inp.receive())
 
-        await self._outputs.out.send(res)
+        await self.outputs.out.send(res)
         return ComponentState.OK
 
 
@@ -371,6 +425,16 @@ class Adder(Component):
         out (torch.Tensor): sum of the inputs.
 
     """
+    class InputsTyping(OutputParams):  # noqa: D106
+        a: InputParam
+        b: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str):
         super().__init__(name)
 
@@ -384,6 +448,6 @@ class Adder(Component):
         outputs.declare("out", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102
-        a, b = await asyncio.gather(self._inputs.a.receive(), self._inputs.b.receive())
-        await self._outputs.out.send(a + b)
+        a, b = await asyncio.gather(self.inputs.a.receive(), self.inputs.b.receive())
+        await self.outputs.out.send(a + b)
         return ComponentState.OK

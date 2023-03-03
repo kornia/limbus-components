@@ -4,7 +4,7 @@ import kornia
 import torch
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class EqualizeClahe(Component):
@@ -52,6 +52,18 @@ class EqualizeClahe(Component):
         torch.Size([2, 3, 10, 20])
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        input: InputParam
+        clip_limit: InputParam
+        grid_size: InputParam
+        slow_and_differentiable: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._callable = kornia.enhance.equalize_clahe

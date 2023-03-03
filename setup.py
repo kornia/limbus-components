@@ -8,6 +8,7 @@ setup(name='limbus-components',
       author='Luis Ferraz',
       url='https://github.com/kornia/limbus-components',
       install_requires=[
+          'limbus >= 0.1.4',
           'torch',
           'numpy',
           'kornia',
@@ -16,7 +17,6 @@ setup(name='limbus-components',
       ],
       extras_require={
           'dev': [
-              'limbus',
               'pytest',
               'pytest-flake8',
               'pytest-cov',

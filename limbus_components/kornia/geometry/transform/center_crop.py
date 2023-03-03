@@ -4,7 +4,7 @@ import kornia
 import torch
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class CenterCrop(Component):
@@ -53,6 +53,19 @@ class CenterCrop(Component):
                   [ 9., 10., 11., 12.]]]])
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        input_tensor: InputParam
+        size: InputParam
+        mode: InputParam
+        padding_mode: InputParam
+        align_corners: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._callable = kornia.geometry.transform.center_crop

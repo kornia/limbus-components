@@ -4,7 +4,7 @@ import kornia
 import torch
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class HomographyWarper(Component):
@@ -45,6 +45,16 @@ class HomographyWarper(Component):
         align_corners: interpolation flag.
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        patch_src: InputParam
+        src_homo_dst: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self,
                  name: str,
                  height: int,
