@@ -3,7 +3,7 @@ import typing
 import kornia
 import torch
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class RgbToHls(Component):
@@ -41,6 +41,15 @@ class RgbToHls(Component):
         >>> output = rgb_to_hls(input)  # 2x3x4x5
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        image: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._callable = kornia.color.rgb_to_hls

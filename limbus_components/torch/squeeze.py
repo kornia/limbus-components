@@ -3,7 +3,7 @@ import typing
 import torch
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class Squeeze(Component):
@@ -63,6 +63,16 @@ class Squeeze(Component):
         torch.Size([2, 2, 1, 2])
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        input: InputParam
+        dim: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._callable = torch.squeeze

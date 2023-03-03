@@ -4,7 +4,7 @@ import kornia
 import torch
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class HistogramMatching(Component):
@@ -41,6 +41,16 @@ class HistogramMatching(Component):
         This function does not matches histograms element-wisely if input a batched tensor.
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        source: InputParam
+        template: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._callable = kornia.contrib.histogram_matching
