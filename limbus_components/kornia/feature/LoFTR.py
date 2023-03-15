@@ -3,7 +3,7 @@ import typing
 import kornia
 import torch
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class LoFTR(Component):
@@ -56,6 +56,15 @@ class LoFTR(Component):
         >>> out = loftr(input)
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        data: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self,
                  name: str,
                  pretrained: typing.Optional[str] = "outdoor",

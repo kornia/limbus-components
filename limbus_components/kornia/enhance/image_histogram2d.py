@@ -4,7 +4,7 @@ import kornia
 import torch
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class ImageHistogram2D(Component):
@@ -61,6 +61,24 @@ class ImageHistogram2D(Component):
           of the histogram otherwise.
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        image: InputParam
+        min: InputParam
+        max: InputParam
+        n_bins: InputParam
+        bandwidth: InputParam
+        centers: InputParam
+        return_pdf: InputParam
+        kernel: InputParam
+        eps: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+        out2: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._callable = kornia.enhance.image_histogram2d

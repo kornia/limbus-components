@@ -3,7 +3,7 @@ import typing
 import kornia
 import torch
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class PyrUp(Component):
@@ -43,6 +43,15 @@ class PyrUp(Component):
         >>> output = PyrUp()(input)  # 1x2x8x8
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        input: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str, border_type: str = "reflect", align_corners: bool = False) -> None:
         super().__init__(name)
         self._obj = kornia.geometry.transform.PyrUp(border_type, align_corners)

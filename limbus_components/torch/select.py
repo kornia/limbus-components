@@ -3,7 +3,7 @@ import typing
 import torch
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class Select(Component):
@@ -28,6 +28,11 @@ class Select(Component):
     Slices the :attr:`input` tensor along the selected dimension at the given index.
     This function returns a view of the original tensor with the given dimension removed.
 
+    .. note:: If :attr:`input` is a sparse tensor and returning a view of
+              the tensor is not possible, a RuntimeError exception is
+              raised. In this is the case, consider using
+              :func:`torch.select_copy` function.
+
     Args:
         input (Tensor): the input tensor.
         dim (int): the dimension to slice
@@ -40,6 +45,17 @@ class Select(Component):
         ``tensor.select(2, index)`` is equivalent to ``tensor[:,:,index]``.
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        input: InputParam
+        dim: InputParam
+        index: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self._callable = torch.select

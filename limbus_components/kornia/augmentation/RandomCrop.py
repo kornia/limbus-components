@@ -5,7 +5,7 @@ import torch
 import inspect
 import asyncio
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 NoneType = type(None)
 
@@ -101,6 +101,17 @@ class RandomCrop(Component):
         tensor(True)
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        input: InputParam
+        params: InputParam
+        kwargs: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self,
                  name: str,
                  size: typing.Tuple[int, int],

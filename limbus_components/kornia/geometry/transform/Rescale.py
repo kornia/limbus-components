@@ -3,7 +3,7 @@ import typing
 import kornia
 import torch
 
-from limbus.core import Component, InputParams, OutputParams, ComponentState
+from limbus.core import Component, InputParams, OutputParams, InputParam, OutputParam, ComponentState
 
 
 class Rescale(Component):
@@ -48,6 +48,15 @@ class Rescale(Component):
         torch.Size([1, 3, 8, 12])
 
     """
+    class InputsTyping(InputParams):  # noqa: D106
+        input: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self,
                  name: str,
                  factor: typing.Union[float, typing.Tuple[float, float]],
