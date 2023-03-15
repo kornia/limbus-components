@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import torch
 import kornia
-from limbus.core import Component, InputParams, OutputParams, Params, ComponentState
+from limbus.core import Component, InputParams, OutputParams, Params, ComponentState, InputParam, OutputParam
 from limbus.widgets import WidgetState, BaseWidgetComponent, WidgetComponent
 from limbus import widgets
 
@@ -29,11 +29,14 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         title (str): title of the window. Default: "".
 
     """
+    class InputsTyping(OutputParams):  # noqa: D106
+        image: InputParam
+        landmarks: InputParam
+
+    inputs: InputsTyping  # type: ignore
+
     # the viz state by default is disabled but can be enabled by the user with the widget_state property.
     WIDGET_STATE: WidgetState = WidgetState.DISABLED
-
-    def __init__(self, name: str):
-        super().__init__(name)
 
     @staticmethod
     def register_inputs(inputs: InputParams) -> None:  # noqa: D102
@@ -93,8 +96,8 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         return kornia.image_to_tensor(frame_vis)
 
     async def _show(self, title: str) -> None:  # noqa: D102
-        images, landmarks = await asyncio.gather(self._inputs.image.receive(),
-                                                 self._inputs.landmarks.receive())
+        images, landmarks = await asyncio.gather(self.inputs.image.receive(),
+                                                 self.inputs.landmarks.receive())
         images = self._draw_landmarks(images, landmarks)
         widgets.get().show_images(self, title, images, nrow=self._properties.get_param("nrow"))
 
@@ -112,8 +115,14 @@ class FaceDetectorToBoxes(Component):
         faces (torch.Tensor): a batch of faces (Bx4x2).
 
     """
-    def __init__(self, name: str):
-        super().__init__(name)
+    class InputsTyping(OutputParams):  # noqa: D106
+        landmarks: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        boxes: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
 
     @staticmethod
     def register_inputs(inputs: InputParams) -> None:  # noqa: D102
@@ -130,7 +139,7 @@ class FaceDetectorToBoxes(Component):
         properties.declare("threshold", float, 0.8)
 
     async def forward(self) -> ComponentState:  # noqa: D102
-        landmarks = await self._inputs.landmarks.receive()
+        landmarks = await self.inputs.landmarks.receive()
         dets: List[kornia.contrib.FaceDetectorResult] = [kornia.contrib.FaceDetectorResult(o) for o in landmarks]
         bboxes: List[torch.Tensor] = []
         for b in dets:
@@ -139,9 +148,9 @@ class FaceDetectorToBoxes(Component):
             # order: top-left, top-right, bottom-right and bottom-left
             bboxes.append(torch.stack((b.top_left, b.top_right, b.bottom_right, b.bottom_left)))
         if len(bboxes) > 0:
-            await self._outputs.boxes.send(torch.stack(bboxes))
+            await self.outputs.boxes.send(torch.stack(bboxes))
         else:
-            await self._outputs.boxes.send(torch.empty((0, 4, 2)).to(landmarks))
+            await self.outputs.boxes.send(torch.empty((0, 4, 2)).to(landmarks))
         return ComponentState.OK
 
 
@@ -163,6 +172,15 @@ class ImageStitcher(Component):
         out (torch.Tensor): stitched image.
 
     """
+    class InputsTyping(OutputParams):  # noqa: D106
+        imgs: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        out: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str, estimator: str = 'ransac', blending_method: str = 'naive'):
         super().__init__(name)
         gftt_hardnet_matcher = kornia.feature.LocalFeatureMatcher(kornia.feature.GFTTAffNetHardNet(500),
@@ -178,7 +196,7 @@ class ImageStitcher(Component):
         outputs.declare("out", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102
-        await self._outputs.out.send(self._is(*((await self._inputs.imgs.receive()).unsqueeze(1))))
+        await self.outputs.out.send(self._is(*((await self._inputs.imgs.receive()).unsqueeze(1))))
         return ComponentState.OK
 
 
@@ -196,6 +214,16 @@ class ImageRegistrator(Component):
         homo (torch.Tensor): homography.
 
     """
+    class InputsTyping(OutputParams):  # noqa: D106
+        img_src: InputParam
+        img_dst: InputParam
+
+    class OutputsTyping(OutputParams):  # noqa: D106
+        homo: OutputParam
+
+    inputs: InputsTyping  # type: ignore
+    outputs: OutputsTyping  # type: ignore
+
     def __init__(self, name: str):
         super().__init__(name)
         self._ir = kornia.geometry.ImageRegistrator()
@@ -210,7 +238,7 @@ class ImageRegistrator(Component):
         outputs.declare("homo", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102
-        img_src, img_dst = await asyncio.gather(self._inputs.img_src.receive(),
-                                                self._inputs.img_dst.receive())
-        await self._outputs.homo.send(self._ir.register(img_src, img_dst))
+        img_src, img_dst = await asyncio.gather(self.inputs.img_src.receive(),
+                                                self.inputs.img_dst.receive())
+        await self.outputs.homo.send(self._ir.register(img_src, img_dst))
         return ComponentState.OK
