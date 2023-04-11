@@ -60,8 +60,3 @@ class ComponentFactory(Component):
             setattr(comp, "return_annotation", return_annotation)
             return comp
         return f
-
-
-if __name__ == "__main__":
-    import kornia
-    auto_generate_doc_from_function(kornia.enhance.equalize_clahe)
