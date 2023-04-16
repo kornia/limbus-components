@@ -67,9 +67,8 @@ class ImageReader(WidgetComponent):
                 return ComponentState.STOPPED
             try:
                 self._idx += 1
-                images.append(
-                    kornia.image_to_tensor(np.asarray(PIL.Image.open(str(self._value[self._idx]))))
-                )
+                array = np.asarray(PIL.Image.open(str(self._value[self._idx])))
+                images.append(kornia.image_to_tensor(array.copy()))  # to avoid issues with writable arrays
                 batch_size += 1
             except:
                 # avoid crashing the whole pipeline when there is a corrupted image or non-image file

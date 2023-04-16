@@ -33,3 +33,9 @@ All the `__init__.py` files inside the folder `limbus_components_dev` must have 
 ```
 
 if they are not following these patterns, the `release` script will fail. Check examples in the folder `limbus_components_dev`.
+
+Steps to run the `release` script:
+- If you changed an existing module, first of all you need to remove the module in `limbus_components` folder.
+- Run the `release` script. `python scripts/release.py`
+- Check that the changes in the `limbus_components` folder are the expected ones.
+- commit the changes and push them to the repo.
