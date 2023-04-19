@@ -111,7 +111,7 @@ class Webcam(WidgetComponent):
         self._height: int = int(self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps: float = self._cap.get(cv2.CAP_PROP_FPS)
 
-    def finish_pipeline(self):  # noqa: D102
+    def release(self):  # noqa: D102
         self._cap.release()
 
     @staticmethod
