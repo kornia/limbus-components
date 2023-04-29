@@ -7,7 +7,8 @@ import cv2
 import numpy as np
 import torch
 import kornia
-from limbus.core import Component, InputParams, OutputParams, Params, ComponentState, InputParam, OutputParam
+from limbus.core import Component, InputParams, OutputParams, PropParams, ComponentState
+from limbus.core import InputParam, OutputParam, PropParam  # we need to avoid ()
 from limbus.widgets import WidgetState, BaseWidgetComponent, WidgetComponent
 from limbus import widgets
 
@@ -35,6 +36,13 @@ class ShowFaceLandmarks(BaseWidgetComponent):
 
     inputs: InputsTyping  # type: ignore
 
+    class PropTyping(PropParams):  # noqa: D106
+        nrow: PropParam
+        draw_keypoints: PropParam
+        threshold: PropParam
+
+    properties: PropTyping  # type: ignore
+
     # the viz state by default is disabled but can be enabled by the user with the widget_state property.
     WIDGET_STATE: WidgetState = WidgetState.DISABLED
 
@@ -44,7 +52,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         inputs.declare("landmarks", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: Params) -> None:  # noqa: D102
+    def register_properties(properties: PropParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         BaseWidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("nrow", Optional[int], value=None)
@@ -133,7 +141,7 @@ class FaceDetectorToBoxes(Component):
         outputs.declare("boxes", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: Params) -> None:  # noqa: D102
+    def register_properties(properties: PropParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         WidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("threshold", float, 0.8)
@@ -188,11 +196,11 @@ class ImageStitcher(Component):
         self._is = kornia.contrib.ImageStitcher(gftt_hardnet_matcher, estimator, blending_method)
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("imgs", torch.Tensor)
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("out", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102
@@ -229,12 +237,12 @@ class ImageRegistrator(Component):
         self._ir = kornia.geometry.ImageRegistrator()
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("img_src", torch.Tensor)
         inputs.declare("img_dst", torch.Tensor)
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("homo", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102
