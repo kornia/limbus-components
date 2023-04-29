@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 import torch
 import kornia
-from limbus.core import Component, InputParams, OutputParams, PropParams, ComponentState
-from limbus.core import InputParam, OutputParam, PropParam  # we need to avoid ()
+from limbus.core import Component, InputParams, OutputParams, PropertyParams, ComponentState
+from limbus.core import InputParam, OutputParam, PropertyParam  # we need to avoid ()
 from limbus.widgets import WidgetState, BaseWidgetComponent, WidgetComponent
 from limbus import widgets
 
@@ -36,10 +36,10 @@ class ShowFaceLandmarks(BaseWidgetComponent):
 
     inputs: InputsTyping  # type: ignore
 
-    class PropTyping(PropParams):  # noqa: D106
-        nrow: PropParam
-        draw_keypoints: PropParam
-        threshold: PropParam
+    class PropTyping(PropertyParams):  # noqa: D106
+        nrow: PropertyParam
+        draw_keypoints: PropertyParam
+        threshold: PropertyParam
 
     properties: PropTyping  # type: ignore
 
@@ -52,7 +52,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         inputs.declare("landmarks", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: PropParams) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         BaseWidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("nrow", Optional[int], value=None)
@@ -141,7 +141,7 @@ class FaceDetectorToBoxes(Component):
         outputs.declare("boxes", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: PropParams) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         WidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("threshold", float, 0.8)

@@ -10,8 +10,8 @@ import numpy as np
 import PIL
 import torch
 import kornia
-from limbus.core import Component, ComponentState, PropParams, InputParams, OutputParams
-from limbus.core import NoValue, InputParam, OutputParam, PropParam  # We need to avoid ()
+from limbus.core import Component, ComponentState, PropertyParams, InputParams, OutputParams
+from limbus.core import NoValue, InputParam, OutputParam, PropertyParam  # We need to avoid ()
 from limbus.widgets import WidgetState, WidgetComponent, BaseWidgetComponent
 from limbus import widgets
 
@@ -42,8 +42,8 @@ class ImageReader(WidgetComponent):
 
     outputs: OutputsTyping  # type: ignore
 
-    class PropTyping(PropParams):  # noqa: D106
-        title: PropParam
+    class PropTyping(PropertyParams):  # noqa: D106
+        title: PropertyParam
 
     properties: PropTyping  # type: ignore
 
@@ -62,7 +62,7 @@ class ImageReader(WidgetComponent):
         outputs.declare("image", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: PropParams) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         properties.declare("title", str, "")
 
     async def forward(self) -> ComponentState:  # noqa: D102
@@ -109,9 +109,9 @@ class Webcam(WidgetComponent):
 
     outputs: OutputsTyping  # type: ignore
 
-    class PropTyping(PropParams):  # noqa: D106
-        title: PropParam
-        text_title: PropParam
+    class PropTyping(PropertyParams):  # noqa: D106
+        title: PropertyParam
+        text_title: PropertyParam
 
     properties: PropTyping  # type: ignore
 
@@ -131,7 +131,7 @@ class Webcam(WidgetComponent):
         outputs.declare("image", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: PropParams) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         properties.declare("title", str, "")
         # NOTE: When a widget does not have a title we assing the name of the component, so if we have >1
         # widgets without default title we will have several widgets with the same title and will be overriden.
@@ -293,15 +293,15 @@ class ImageShow(BaseWidgetComponent):
 
     inputs: InputsTyping  # type: ignore
 
-    class PropTyping(PropParams):  # noqa: D106
-        title: PropParam
-        nrow: PropParam
+    class PropTyping(PropertyParams):  # noqa: D106
+        title: PropertyParam
+        nrow: PropertyParam
 
     properties: PropTyping  # type: ignore
 
 
     @staticmethod
-    def register_properties(properties: PropParams) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         BaseWidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("nrow", Optional[int], value=None)
@@ -369,14 +369,14 @@ class Printer(BaseWidgetComponent):
 
     inputs: InputsTyping  # type: ignore
 
-    class PropTyping(PropParams):  # noqa: D106
-        title: PropParam
-        append: PropParam
+    class PropTyping(PropertyParams):  # noqa: D106
+        title: PropertyParam
+        append: PropertyParam
 
     properties: PropTyping  # type: ignore
 
     @staticmethod
-    def register_properties(properties: PropParams) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         BaseWidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("append", bool, value=False)
