@@ -70,7 +70,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         frame_vis: np.ndarray = kornia.tensor_to_image(image).copy()
         frame_vis = (frame_vis * 255).astype(np.uint8)
         for b in dets:
-            if b.score < self._properties.get_param("threshold"):
+            if b.score < self._properties.threshold.value:
                 continue
 
             # draw face bounding box
@@ -93,7 +93,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
             frame_vis = cv2.line(frame_vis, (x1, y1), (x1 + line_length, y1), (0, 255, 0), thickness=line_thickness)
             frame_vis = cv2.line(frame_vis, (x1, y1), (x1, y1 - line_length), (0, 255, 0), thickness=line_thickness)
 
-            if self._properties.get_param("draw_keypoints"):
+            if self._properties.draw_keypoints.value:
                 # draw facial keypoints
                 frame_vis = self._draw_keypoint(frame_vis, b, kornia.contrib.FaceKeypoint.EYE_LEFT)
                 frame_vis = self._draw_keypoint(frame_vis, b, kornia.contrib.FaceKeypoint.EYE_RIGHT)
@@ -107,7 +107,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         images, landmarks = await asyncio.gather(self.inputs.image.receive(),
                                                  self.inputs.landmarks.receive())
         images = self._draw_landmarks(images, landmarks)
-        widgets.get().show_images(self, title, images, nrow=self._properties.get_param("nrow"))
+        widgets.get().show_images(self, title, images, nrow=self._properties.nrow.value)
 
 
 class FaceDetectorToBoxes(Component):
@@ -151,7 +151,7 @@ class FaceDetectorToBoxes(Component):
         dets: List[kornia.contrib.FaceDetectorResult] = [kornia.contrib.FaceDetectorResult(o) for o in landmarks]
         bboxes: List[torch.Tensor] = []
         for b in dets:
-            if b.score < self._properties.get_param("threshold"):
+            if b.score < self._properties.threshold.value:
                 continue
             # order: top-left, top-right, bottom-right and bottom-left
             bboxes.append(torch.stack((b.top_left, b.top_right, b.bottom_right, b.bottom_left)))

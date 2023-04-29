@@ -26,8 +26,8 @@ class TestAdder:
         add = Adder("add")
         assert add.state == ComponentState.INITIALIZED
         assert add.name == "add"
-        print(add.outputs.get_param("out"))
-        assert isinstance(add.outputs.get_param("out"), NoValue)
+        print(add.outputs.out.value)
+        assert isinstance(add.outputs.out.value, NoValue)
 
         add.inputs.a.value = torch.tensor(2.)
         add.inputs.b.value = torch.tensor(3.)
@@ -41,8 +41,8 @@ class TestImageShow:
         show = ImageShow("show")
         assert show.state == ComponentState.INITIALIZED
         assert show.name == "show"
-        assert show.properties.get_param("title") == ""
-        assert show.properties.get_param("nrow") is None
+        assert show.properties.title.value == ""
+        assert show.properties.nrow.value is None
 
         show.inputs.image.value = torch.zeros((1, 3, 20, 20))
         asyncio.run(show())
@@ -70,7 +70,7 @@ class TestImageShow:
         show = ImageShow("show")
         show.properties.set_param("title", "my title")
         assert show.name == "show"
-        assert show.properties.get_param("title") == "my title"
+        assert show.properties.title.value == "my title"
         asyncio.run(show())
         assert show.state == ComponentState.OK
 
@@ -80,8 +80,8 @@ class TestImageShow:
         show.widget_state = WidgetState.ENABLED
         assert show.name == "show"
         assert show.set_properties(title="my_title", nrow=2)
-        assert show.properties.get_param("title") == "my_title"
-        assert show.properties.get_param("nrow") == 2
+        assert show.properties.title.value == "my_title"
+        assert show.properties.nrow.value == 2
         assert not show.set_properties(title="my_title", xyz=2)
 
 
@@ -89,8 +89,8 @@ class TestPrinter:
     def test_viz_enabled(self):
         printer = Printer("printer")
         assert printer.name == "printer"
-        assert printer.properties.get_param("title") == ""
-        assert printer.properties.get_param("append") is False
+        assert printer.properties.title.value == ""
+        assert printer.properties.append.value is False
 
         printer.inputs.inp.value = torch.zeros((1, 3, 20, 20))
         asyncio.run(printer())
@@ -114,7 +114,7 @@ class TestPrinter:
         printer = Printer("printer")
         printer.properties.set_param("title", "my title")
         assert printer.name == "printer"
-        assert printer.properties.get_param("title") == "my title"
+        assert printer.properties.title.value == "my title"
         asyncio.run(printer())
         assert printer.state == ComponentState.OK
 
@@ -124,6 +124,6 @@ class TestPrinter:
         printer.widget_state = WidgetState.ENABLED
         assert printer.name == "printer"
         assert printer.set_properties(title="my_title", append=True)
-        assert printer.properties.get_param("title") == "my_title"
-        assert printer.properties.get_param("append") is True
+        assert printer.properties.title.value == "my_title"
+        assert printer.properties.append.value is True
         assert not printer.set_properties(title="my_title", xyz=2)
