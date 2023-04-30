@@ -13,18 +13,18 @@ class TestConstant:
     @pytest.mark.parametrize("value", ([1, 2., torch.tensor(3.)]))
     def test_smoke(self, value):
         c = Constant("k", value)
-        assert c.state == ComponentState.INITIALIZED
+        assert ComponentState.INITIALIZED in c.state
         assert c.name == "k"
         assert isinstance(c.outputs.out.value, NoValue)
         asyncio.run(c())
-        assert c.state == ComponentState.OK
+        assert ComponentState.OK in c.state
         assert c.outputs.out.value == value
 
 
 class TestAdder:
     def test_smoke(self):
         add = Adder("add")
-        assert add.state == ComponentState.INITIALIZED
+        assert ComponentState.INITIALIZED in add.state
         assert add.name == "add"
         print(add.outputs.out.value)
         assert isinstance(add.outputs.out.value, NoValue)
@@ -32,14 +32,14 @@ class TestAdder:
         add.inputs.a.value = torch.tensor(2.)
         add.inputs.b.value = torch.tensor(3.)
         asyncio.run(add())
-        assert add.state == ComponentState.OK
+        assert ComponentState.OK in add.state
         assert add.outputs.out.value == torch.tensor(5.)
 
 
 class TestImageShow:
     def test_viz_enabled(self):
         show = ImageShow("show")
-        assert show.state == ComponentState.INITIALIZED
+        assert ComponentState.INITIALIZED in show.state
         assert show.name == "show"
         assert show.properties.title.value == ""
         assert show.properties.nrow.value is None
@@ -49,7 +49,7 @@ class TestImageShow:
         # by default the viz is done in Console. Images cannot be shown in Console and returns a log.warning.
         # log.warning("Console visualization does not show images.")
         # anyway the ComponentState returned is Ok in this case.
-        assert show.state == ComponentState.OK
+        assert ComponentState.OK in show.state
 
     def test_viz_disabled(self):
         # disable the Console visualization
@@ -57,10 +57,10 @@ class TestImageShow:
 
         try:
             show = ImageShow("show")
-            assert show.state == ComponentState.INITIALIZED
+            assert ComponentState.INITIALIZED in show.state
             show.inputs.image.value = torch.zeros((1, 3, 20, 20))
             asyncio.run(show())
-            assert show.state == ComponentState.DISABLED
+            assert ComponentState.DISABLED in show.state
         except Exception as e:
             raise e
         finally:
@@ -68,21 +68,21 @@ class TestImageShow:
 
     def test_viz_name(self):
         show = ImageShow("show")
-        show.properties.set_param("title", "my title")
+        show.properties.title.init_property("my title")
         assert show.name == "show"
         assert show.properties.title.value == "my title"
         asyncio.run(show())
-        assert show.state == ComponentState.OK
+        assert ComponentState.OK in show.state
 
     def test_set_properties(self):
         assert ImageShow.WIDGET_STATE == WidgetState.ENABLED
         show = ImageShow("show")
         show.widget_state = WidgetState.ENABLED
         assert show.name == "show"
-        assert show.set_properties(title="my_title", nrow=2)
+        show.properties.title.init_property("my_title")
+        show.properties.nrow.init_property(2)
         assert show.properties.title.value == "my_title"
         assert show.properties.nrow.value == 2
-        assert not show.set_properties(title="my_title", xyz=2)
 
 
 class TestPrinter:
@@ -94,7 +94,7 @@ class TestPrinter:
 
         printer.inputs.inp.value = torch.zeros((1, 3, 20, 20))
         asyncio.run(printer())
-        assert printer.state == ComponentState.OK
+        assert ComponentState.OK in printer.state
 
     def test_viz_disabled(self):
         # disable the Console visualization
@@ -104,7 +104,7 @@ class TestPrinter:
             printer = Printer("printer")
             printer.inputs.inp.value = torch.zeros((1, 3, 20, 20))
             asyncio.run(printer())
-            assert printer.state == ComponentState.DISABLED
+            assert ComponentState.DISABLED in printer.state
         except Exception as e:
             raise e
         finally:
@@ -112,18 +112,18 @@ class TestPrinter:
 
     def test_viz_name(self):
         printer = Printer("printer")
-        printer.properties.set_param("title", "my title")
+        printer.properties.title.init_property("my title")
         assert printer.name == "printer"
         assert printer.properties.title.value == "my title"
         asyncio.run(printer())
-        assert printer.state == ComponentState.OK
+        assert ComponentState.OK in printer.state
 
     def test_set_properties(self):
         assert Printer.WIDGET_STATE == WidgetState.ENABLED
         printer = Printer("printer")
         printer.widget_state = WidgetState.ENABLED
         assert printer.name == "printer"
-        assert printer.set_properties(title="my_title", append=True)
+        printer.properties.title.init_property("my_title")
+        printer.properties.append.init_property(True)
         assert printer.properties.title.value == "my_title"
         assert printer.properties.append.value is True
-        assert not printer.set_properties(title="my_title", xyz=2)

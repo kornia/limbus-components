@@ -299,7 +299,6 @@ class ImageShow(BaseWidgetComponent):
 
     properties: PropTyping  # type: ignore
 
-
     @staticmethod
     def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
