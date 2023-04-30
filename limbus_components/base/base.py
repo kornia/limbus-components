@@ -10,7 +10,8 @@ import numpy as np
 import PIL
 import torch
 import kornia
-from limbus.core import Component, ComponentState, Params, InputParams, OutputParams, NoValue, InputParam, OutputParam
+from limbus.core import Component, ComponentState, PropertyParams, InputParams, OutputParams
+from limbus.core import NoValue, InputParam, OutputParam, PropertyParam  # We need to avoid ()
 from limbus.widgets import WidgetState, WidgetComponent, BaseWidgetComponent
 from limbus import widgets
 
@@ -41,6 +42,11 @@ class ImageReader(WidgetComponent):
 
     outputs: OutputsTyping  # type: ignore
 
+    class PropTyping(PropertyParams):  # noqa: D106
+        title: PropertyParam
+
+    properties: PropTyping  # type: ignore
+
     def __init__(self, name: str, path: Path, batch_size: int = 1):
         super().__init__(name)
         self._value: List[Path] = []
@@ -52,11 +58,11 @@ class ImageReader(WidgetComponent):
             self._value.append(Path(path))
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("image", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: Params) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         properties.declare("title", str, "")
 
     async def forward(self) -> ComponentState:  # noqa: D102
@@ -76,7 +82,7 @@ class ImageReader(WidgetComponent):
         batch = torch.stack(images)
         # images must be in the range [0, 1]
         batch = batch.div(255.).clamp(0, 1)
-        widgets.get().show_images(self, self._properties.get_param("title"), batch)
+        widgets.get().show_images(self, self._properties.title.value, batch)
         await self._outputs.image.send(batch)
         return ComponentState.OK
 
@@ -103,6 +109,12 @@ class Webcam(WidgetComponent):
 
     outputs: OutputsTyping  # type: ignore
 
+    class PropTyping(PropertyParams):  # noqa: D106
+        title: PropertyParam
+        text_title: PropertyParam
+
+    properties: PropTyping  # type: ignore
+
     def __init__(self, name: str, batch_size: int = 1):
         super().__init__(name)
         self._batch_size = batch_size
@@ -111,15 +123,15 @@ class Webcam(WidgetComponent):
         self._height: int = int(self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps: float = self._cap.get(cv2.CAP_PROP_FPS)
 
-    def finish_pipeline(self):  # noqa: D102
+    def release(self):  # noqa: D102
         self._cap.release()
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("image", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: Params) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         properties.declare("title", str, "")
         # NOTE: When a widget does not have a title we assing the name of the component, so if we have >1
         # widgets without default title we will have several widgets with the same title and will be overriden.
@@ -146,8 +158,8 @@ class Webcam(WidgetComponent):
         batch = torch.stack(images)
         # images must be in the range [0, 1]
         batch = batch.div(255.).clamp(0, 1)
-        widgets.get().show_images(self, self._properties.get_param("title"), batch)
-        widgets.get().show_text(self, self._properties.get_param("text_title"),
+        widgets.get().show_images(self, self._properties.title.value, batch)
+        widgets.get().show_text(self, self._properties.text_title.value,
                                 f"{self._fps} fps, {self._width}x{self._height}")
         await self._outputs.image.send(batch)
         return ComponentState.OK
@@ -181,12 +193,12 @@ class DrawBoxes(Component):
         super().__init__(name)
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("images", torch.Tensor)
         inputs.declare("boxes", List[torch.Tensor])
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("out", torch.Tensor)
 
     def _draw_boxes(self, images: torch.Tensor, boxes: List[torch.Tensor]) -> torch.Tensor:
@@ -235,12 +247,12 @@ class CropBoxes(Component):
         self._size: Tuple[int, int] = size
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("images", torch.Tensor)
         inputs.declare("boxes", List[torch.Tensor])
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("crops", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102
@@ -281,14 +293,20 @@ class ImageShow(BaseWidgetComponent):
 
     inputs: InputsTyping  # type: ignore
 
+    class PropTyping(PropertyParams):  # noqa: D106
+        title: PropertyParam
+        nrow: PropertyParam
+
+    properties: PropTyping  # type: ignore
+
     @staticmethod
-    def register_properties(properties: Params) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         BaseWidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("nrow", Optional[int], value=None)
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("image", torch.Tensor)
 
     async def _show(self, title: str) -> None:  # noqa: D102
@@ -298,7 +316,7 @@ class ImageShow(BaseWidgetComponent):
         if images.numel() == 0:
             # TODO: temporal solution, replace by something better
             images = torch.zeros((1, 1, max(images.shape[2], 1), max(images.shape[3], 1))).to(images)
-        widgets.get().show_images(self, title, images, nrow=self._properties.get_param("nrow"))
+        widgets.get().show_images(self, title, images, nrow=self._properties.nrow.value)
 
 
 class Constant(Component):
@@ -322,7 +340,7 @@ class Constant(Component):
         self._value = value
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("out", Any, arg="value")
 
     async def forward(self) -> ComponentState:  # noqa: D102
@@ -350,20 +368,26 @@ class Printer(BaseWidgetComponent):
 
     inputs: InputsTyping  # type: ignore
 
+    class PropTyping(PropertyParams):  # noqa: D106
+        title: PropertyParam
+        append: PropertyParam
+
+    properties: PropTyping  # type: ignore
+
     @staticmethod
-    def register_properties(properties: Params) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         BaseWidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("append", bool, value=False)
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("inp", Any)
 
     async def _show(self, title: str) -> None:  # noqa: D102
         widgets.get().show_text(self, title,
                                 str(await self._inputs.inp.receive()),
-                                append=self._properties.get_param("append"))
+                                append=self._properties.append.value)
 
 
 class Accumulator(Component):
@@ -438,12 +462,12 @@ class Adder(Component):
         super().__init__(name)
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("a", torch.Tensor)
         inputs.declare("b", torch.Tensor)
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("out", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102

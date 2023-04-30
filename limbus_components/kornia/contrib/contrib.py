@@ -7,7 +7,8 @@ import cv2
 import numpy as np
 import torch
 import kornia
-from limbus.core import Component, InputParams, OutputParams, Params, ComponentState, InputParam, OutputParam
+from limbus.core import Component, InputParams, OutputParams, PropertyParams, ComponentState
+from limbus.core import InputParam, OutputParam, PropertyParam  # we need to avoid ()
 from limbus.widgets import WidgetState, BaseWidgetComponent, WidgetComponent
 from limbus import widgets
 
@@ -35,6 +36,13 @@ class ShowFaceLandmarks(BaseWidgetComponent):
 
     inputs: InputsTyping  # type: ignore
 
+    class PropTyping(PropertyParams):  # noqa: D106
+        nrow: PropertyParam
+        draw_keypoints: PropertyParam
+        threshold: PropertyParam
+
+    properties: PropTyping  # type: ignore
+
     # the viz state by default is disabled but can be enabled by the user with the widget_state property.
     WIDGET_STATE: WidgetState = WidgetState.DISABLED
 
@@ -44,7 +52,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         inputs.declare("landmarks", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: Params) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         BaseWidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("nrow", Optional[int], value=None)
@@ -62,7 +70,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         frame_vis: np.ndarray = kornia.tensor_to_image(image).copy()
         frame_vis = (frame_vis * 255).astype(np.uint8)
         for b in dets:
-            if b.score < self._properties.get_param("threshold"):
+            if b.score < self._properties.threshold.value:
                 continue
 
             # draw face bounding box
@@ -85,7 +93,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
             frame_vis = cv2.line(frame_vis, (x1, y1), (x1 + line_length, y1), (0, 255, 0), thickness=line_thickness)
             frame_vis = cv2.line(frame_vis, (x1, y1), (x1, y1 - line_length), (0, 255, 0), thickness=line_thickness)
 
-            if self._properties.get_param("draw_keypoints"):
+            if self._properties.draw_keypoints.value:
                 # draw facial keypoints
                 frame_vis = self._draw_keypoint(frame_vis, b, kornia.contrib.FaceKeypoint.EYE_LEFT)
                 frame_vis = self._draw_keypoint(frame_vis, b, kornia.contrib.FaceKeypoint.EYE_RIGHT)
@@ -99,7 +107,7 @@ class ShowFaceLandmarks(BaseWidgetComponent):
         images, landmarks = await asyncio.gather(self.inputs.image.receive(),
                                                  self.inputs.landmarks.receive())
         images = self._draw_landmarks(images, landmarks)
-        widgets.get().show_images(self, title, images, nrow=self._properties.get_param("nrow"))
+        widgets.get().show_images(self, title, images, nrow=self._properties.nrow.value)
 
 
 class FaceDetectorToBoxes(Component):
@@ -133,7 +141,7 @@ class FaceDetectorToBoxes(Component):
         outputs.declare("boxes", torch.Tensor)
 
     @staticmethod
-    def register_properties(properties: Params) -> None:  # noqa: D102
+    def register_properties(properties: PropertyParams) -> None:  # noqa: D102
         # this line is like super() but for static methods.
         WidgetComponent.register_properties(properties)  # adds the title param
         properties.declare("threshold", float, 0.8)
@@ -143,7 +151,7 @@ class FaceDetectorToBoxes(Component):
         dets: List[kornia.contrib.FaceDetectorResult] = [kornia.contrib.FaceDetectorResult(o) for o in landmarks]
         bboxes: List[torch.Tensor] = []
         for b in dets:
-            if b.score < self._properties.get_param("threshold"):
+            if b.score < self._properties.threshold.value:
                 continue
             # order: top-left, top-right, bottom-right and bottom-left
             bboxes.append(torch.stack((b.top_left, b.top_right, b.bottom_right, b.bottom_left)))
@@ -188,11 +196,11 @@ class ImageStitcher(Component):
         self._is = kornia.contrib.ImageStitcher(gftt_hardnet_matcher, estimator, blending_method)
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("imgs", torch.Tensor)
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("out", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102
@@ -229,12 +237,12 @@ class ImageRegistrator(Component):
         self._ir = kornia.geometry.ImageRegistrator()
 
     @staticmethod
-    def register_inputs(inputs: Params) -> None:  # noqa: D102
+    def register_inputs(inputs: InputParams) -> None:  # noqa: D102
         inputs.declare("img_src", torch.Tensor)
         inputs.declare("img_dst", torch.Tensor)
 
     @staticmethod
-    def register_outputs(outputs: Params) -> None:  # noqa: D102
+    def register_outputs(outputs: OutputParams) -> None:  # noqa: D102
         outputs.declare("homo", torch.Tensor)
 
     async def forward(self) -> ComponentState:  # noqa: D102

@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(name='limbus-components',
-      version='0.1.3',
+      version='0.1.4',
       description='Components to be used with limbus.',
       long_description=open('README.md').read(),
       long_description_content_type='text/markdown',
       author='Luis Ferraz',
       url='https://github.com/kornia/limbus-components',
       install_requires=[
-          'limbus >= 0.1.4',
+          'limbus >= 0.1.6',
           'torch',
           'numpy',
           'kornia',
